@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Ultra Neon Game Hub: Tic Tac Toe, Ludo, Snake, Jokes & More</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+    body {
+      background: radial-gradient(circle at 50% 40%, #18192b 80%, #0e0e1a 100%);
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    #main-container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .neon-text {
+      color: #00fff0;
+      text-shadow:
+        0 0 7px #00fff0,
+        0 0 10px #00fff0,
+        0 0 21px #00fff0,
+        0 0 42px #00fff0;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+      letter-spacing: 2px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    header nav {
+      margin-top: 18px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #00fff0;
+      font-size: 1.2em;
+      margin: 0 10px;
+      padding: 8px 24px;
+      cursor: pointer;
+      border-radius: 8px;
+      box-shadow: 0 0 8px #00fff0;
+      transition: background 0.2s, color 0.2s;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    }
+    .tab-btn.active, .tab-btn:focus {
+      background: #00fff088;
+      color: #fff;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 1.1em;
+    }
+    /* Tic Tac Toe Board */
+    .neon-board {
+      display: grid;
+      grid-template-columns: repeat(3, 90px);
+      grid-template-rows: repeat(3, 90px);
+      gap: 16px;
+      justify-content: center;
+      margin: 30px auto 18px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 14px;
+      box-shadow: 0 0 40px #00ff40, 0 0 60px #00fff0 inset;
+      padding: 24px;
+      width: max-content;
+    }
+    .cell {
+      width: 90px;
+      height: 90px;
+      background: #18192b;
+      border-radius: 11px;
+      box-shadow: 0 0 16px #00ff40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3em;
+      cursor: pointer;
+      user-select: none;
+      transition: box-shadow 0.2s, background 0.2s;
+      position: relative;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    }
+    .cell.x {
+      color: #00fff0;
+      text-shadow: 0 0 16px #00fff0, 0 0 30px #00fff0;
+      animation: popX 0.3s;
+    }
+    .cell.o {
+      color: #ff00ea;
+      text-shadow: 0 0 16px #ff00ea, 0 0 30px #ff00ea;
+      animation: popO 0.3s;
+    }
+    @keyframes popX { 0% {transform: scale(0.7);} 80% {transform: scale(1.1);} 100% {transform: scale(1);} }
+    @keyframes popO { 0% {transform: scale(0.7);} 80% {transform: scale(1.1);} 100% {transform: scale(1);} }
+    .cell.winner {
+      background: #00ff4066;
+      box-shadow: 0 0 40px #00ff40, 0 0 80px #fff inset;
+      animation: winnerPulse 1.2s infinite alternate;
+    }
+    @keyframes winnerPulse {
+      0% {box-shadow: 0 0 30px #00ff40, 0 0 80px #fff inset;}
+      100% {box-shadow: 0 0 60px #00fff0, 0 0 120px #fff inset;}
+    }
+    /* Tic Tac Toe Settings */
+    .ttt-settings {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .ttt-settings label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.07em;
+    }
+    .ttt-settings input[type="color"] {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #00fff0;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+    #ttt-reset, #ttt-hint {
+      background: #18192b;
+      color: #00fff0;
+      border: 2px solid #00fff0;
+      padding: 6px 18px;
+      border-radius: 8px;
+      font-size: 1em;
+      box-shadow: 0 0 16px #00fff0;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      margin-left: 10px;
+    }
+    #ttt-hint { border: 2px solid #ff00ea; color: #ff00ea; box-shadow: 0 0 16px #ff00ea; }
+    #ttt-hint:hover { background: #ff00ea; color: #18192b; }
+    #ttt-reset:hover {
+      background: #00fff0;
+      color: #18192b;
+    }
+    .ttt-history {
+      background: #111222;
+      border-radius: 12px;
+      margin: 18px auto;
+      padding: 12px 20px;
+      width: 70%;
+      box-shadow: 0 0 12px #00fff0;
+    }
+    .ttt-history h3 {
+      margin-bottom: 4px;
+      font-size: 1.05em;
+      color: #00fff0;
+    }
+    #move-history {
+      font-size: 1em;
+      color: #fff;
+      margin-left: 18px;
+    }
+    .ttt-extras {
+      text-align: center;
+      margin-top: 12px;
+    }
+    .neon-btn {
+      margin: 0 10px;
+      padding: 9px 28px;
+      background: #0e0e1a;
+      color: #00fff0;
+      border: 2px solid #00fff0;
+      border-radius: 8px;
+      box-shadow: 0 0 16px #00fff0;
+      font-size: 1.07em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    }
+    .neon-btn:hover {
+      background: #00fff0;
+      color: #0e0e1a;
+    }
+    /* Joke Generator */
+    .joke-container {
+      max-width: 500px;
+      margin: 42px auto 0;
+      padding: 32px 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 40px #ff00ea;
+      background: rgba(18, 19, 32, 0.95);
+      text-align: center;
+    }
+    .neon-joke {
+      color: #ff00ea;
+      text-shadow: 0 0 8px #ff00ea, 0 0 18px #ff00ea;
+      font-size: 1.32em;
+      min-height: 56px;
+      margin-bottom: 16px;
+    }
+    .neon-card {
+      background: rgba(20, 20, 40, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 0 32px #00fff0;
+      padding: 18px;
+    }
+    /* Ludo Mini-game */
+    .ludo-container {
+      margin: 28px auto 0;
+      max-width: 480px;
+    }
+    #ludo-board {
+      display: block;
+      margin: 16px auto 0;
+      background: #18192b;
+      border-radius: 16px;
+      box-shadow: 0 0 32px #00ff40, 0 0 20px #00fff0 inset;
+    }
+    #ludo-controls {
+      margin: 16px auto 0;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      align-items: center;
+    }
+    /* Snake Game */
+    .snake-container {
+      margin: 28px auto 0;
+      max-width: 420px;
+      text-align: center;
+    }
+    #snake-board {
+      background: #18192b;
+      border-radius: 16px;
+      box-shadow: 0 0 32px #00fff0, 0 0 20px #ff00ea inset;
+    }
+    .snake-controls {
+      margin-top: 18px;
+    }
+    /* Memory Game */
+    .memory-container {
+      margin: 28px auto 0;
+      max-width: 420px;
+      text-align: center;
+    }
+    .memory-board {
+      display: grid;
+      grid-template-columns: repeat(4, 60px);
+      grid-gap: 14px;
+      justify-content: center;
+      margin: 28px auto 0;
+    }
+    .memory-card {
+      width: 60px;
+      height: 60px;
+      background: #111222;
+      border-radius: 10px;
+      box-shadow: 0 0 14px #00fff0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.12s, color 0.2s;
+      color: #00fff0;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+      position: relative;
+    }
+    .memory-card.flipped, .memory-card.matched {
+      background: #ff00ea;
+      color: #fff;
+      box-shadow: 0 0 24px #ff00ea;
+    }
+    .memory-card.matched { background: #00ff40 !important; }
+    /* Leaderboard */
+    .leaderboard-card {
+      max-width: 500px;
+      background: rgba(20, 20, 45, 0.94);
+      border-radius: 16px;
+      margin: 32px auto;
+      box-shadow: 0 0 32px #00fff0;
+      padding: 16px 24px;
+      text-align: center;
+    }
+    .leaderboard-card h3 {
+      color: #ff00ea;
+      margin-bottom: 8px;
+      text-shadow: 0 0 12px #ff00ea;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    }
+    .leaderboard-list {
+      list-style: decimal;
+      font-size: 1.1em;
+      margin: 0 auto;
+      padding-left: 20px;
+      text-align: left;
+      color: #fff;
+    }
+    .leaderboard-list li {
+      margin: 2px 0;
+      padding: 2px 0;
+      text-shadow: 0 0 8px #00fff0;
+    }
+    /* ChatBot */
+    .chatbot-container {
+      max-width: 420px;
+      margin: 32px auto 0;
+      background: rgba(10, 20, 30, 0.98);
+      border-radius: 16px;
+      box-shadow: 0 0 24px #00fff0;
+      padding: 14px 15px 8px 15px;
+      color: #fff;
+    }
+    #chat-messages {
+      min-height: 80px;
+      max-height: 180px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      font-size: 1em;
+      color: #fff;
+    }
+    #chat-input {
+      width: 70%;
+      padding: 7px 10px;
+      border-radius: 7px;
+      border: none;
+      background: #111222;
+      color: #00fff0;
+      font-size: 1.06em;
+      margin-right: 8px;
+    }
+    #chat-send {
+      background: #0e0e1a;
+      color: #00fff0;
+      border: 2px solid #00fff0;
+      border-radius: 8px;
+      box-shadow: 0 0 16px #00fff0;
+      font-size: 1.07em;
+      padding: 8px 20px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    }
+    #chat-send:hover { background: #00fff0; color: #18192b; }
+    /* Responsive Design */
+    @media (max-width: 700px) {
+      .neon-board { grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 9px; padding: 8px; }
+      .cell { width: 60px; height: 60px; font-size: 2em; }
+      #main-container { padding: 7px; }
+      .ttt-history, .joke-container, .ludo-container, .snake-container, .memory-container, .leaderboard-card, .chatbot-container { width: 98% !important; padding: 8px 5px; }
+      #ludo-board, #snake-board { width: 320px; height: 320px; }
+      .memory-board { grid-template-columns: repeat(4, 48px); }
+      .memory-card { width: 48px; height: 48px; font-size: 1.3em; }
+    }
+    ::-webkit-scrollbar { width: 10px; background: #111222; }
+    ::-webkit-scrollbar-thumb { background: #00fff0; border-radius: 8px; box-shadow: 0 0 8px #00fff0; }
+    .blink { animation: blink 1s step-start 0s infinite; }
+    @keyframes blink { 50% { opacity: 0.4; } }
+    .tooltip { position: relative; cursor: pointer; }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 120px;
+      background: #18192b;
+      color: #00fff0;
+      text-align: center;
+      border-radius: 6px;
+      padding: 6px 0;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; left: 50%; margin-left: -60px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      box-shadow: 0 0 10px #00fff0;
+    }
+    .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+  </style>
+</head>
+<body>
+<div id="main-container">
+  <header>
+    <h1 class="neon-text blink">Ultra Neon Game Hub</h1>
+    <nav>
+      <button class="tab-btn active" data-tab="ttt">Tic Tac Toe</button>
+      <button class="tab-btn" data-tab="joke">Jokes</button>
+      <button class="tab-btn" data-tab="ludo">Ludo</button>
+      <button class="tab-btn" data-tab="snake">Snake</button>
+      <button class="tab-btn" data-tab="memory">Memory</button>
+      <button class="tab-btn" data-tab="chatbot">ChatBot</button>
+      <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
+    </nav>
+  </header>
+  <section id="game-section">
+    <!-- Tic Tac Toe Game -->
+    <div id="ttt-tab" class="tab-content active">
+      <div class="ttt-settings">
+        <label>
+          <span>Player 1 Neon:</span>
+          <input type="color" id="player1-color" value="#00fff0">
+        </label>
+        <label>
+          <span>Player 2 Neon:</span>
+          <input type="color" id="player2-color" value="#ff00ea">
+        </label>
+        <label>
+          <span>Grid Neon:</span>
+          <input type="color" id="grid-color" value="#00ff40">
+        </label>
+        <button id="ttt-reset">Reset</button>
+        <button id="ttt-hint" class="neon-btn" title="Suggest a move">Hint</button>
+      </div>
+      <div id="ai-difficulty" style="text-align:center; margin-bottom:12px;">
+        <label class="tooltip" style="color:#00fff0;">
+          <span>Mode:</span>
+          <select id="ai-select" style="margin-left:7px">
+            <option value="none">2 Players</option>
+            <option value="easy">AI Easy</option>
+            <option value="hard">AI Hard</option>
+            <option value="crazy">AI Crazy</option>
+          </select>
+          <span class="tooltiptext">Choose AI or 2P mode!</span>
+        </label>
+      </div>
+      <div id="ttt-board" class="neon-board"></div>
+      <div id="ttt-status" class="neon-text"></div>
+      <div class="ttt-history">
+        <h3>Move History</h3>
+        <ol id="move-history"></ol>
+      </div>
+      <div class="ttt-extras">
+        <button class="neon-btn" id="ttt-save">Save</button>
+        <button class="neon-btn" id="ttt-load">Load</button>
+        <button class="neon-btn" id="ttt-undo">Undo</button>
+        <button class="neon-btn" id="ttt-redo">Redo</button>
+      </div>
+    </div>
+    <!-- Joke Generator -->
+    <div id="joke-tab" class="tab-content">
+      <div class="joke-container neon-card">
+        <h2 class="neon-text">Joke Generator</h2>
+        <p id="joke-text" class="neon-joke"></p>
+        <button id="joke-btn" class="neon-btn">Get Random Joke</button>
+        <input id="custom-joke" type="text" placeholder="Add your own joke..." style="width:60%;padding:4px 7px;margin-top:13px;border-radius:6px;border:none;background:#222;color:#fff;">
+        <button id="add-joke" class="neon-btn" style="margin-left:10px;padding:7px 17px;">Add</button>
+        <div style="margin-top:19px;">
+          <button id="tts-joke" class="neon-btn">🔊 Listen</button>
+          <button id="copy-joke" class="neon-btn">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+    <!-- Ludo Mini-Game -->
+    <div id="ludo-tab" class="tab-content">
+      <div class="ludo-container neon-card">
+        <h2 class="neon-text">Mini Ludo</h2>
+        <canvas id="ludo-board" width="400" height="400"></canvas>
+        <div id="ludo-controls">
+          <button id="ludo-roll" class="neon-btn">Roll Dice</button>
+          <span id="ludo-status" class="neon-text"></span>
+        </div>
+      </div>
+    </div>
+    <!-- Snake Game -->
+    <div id="snake-tab" class="tab-content">
+      <div class="snake-container neon-card">
+        <h2 class="neon-text">Snake Game</h2>
+        <canvas id="snake-board" width="400" height="400" tabindex="0"></canvas>
+        <div class="snake-controls">
+          <button id="snake-start" class="neon-btn">Start</button>
+          <span id="snake-score" class="neon-text">Score: 0</span>
+        </div>
+        <p style="font-size:0.98em; color:#00fff0;">Use Arrow Keys (or swipe) to control!</p>
+      </div>
+    </div>
+    <!-- Memory Game -->
+    <div id="memory-tab" class="tab-content">
+      <div class="memory-container neon-card">
+        <h2 class="neon-text">Memory Match</h2>
+        <div class="memory-board" id="memory-board"></div>
+        <div style="margin-top:10px;">
+          <button id="memory-reset" class="neon-btn">Restart</button>
+          <span id="memory-status" class="neon-text"></span>
+        </div>
+      </div>
+    </div>
+    <!-- ChatBot -->
+    <div id="chatbot-tab" class="tab-content">
+      <div class="chatbot-container neon-card">
+        <h2 class="neon-text">Mini ChatBot</h2>
+        <div id="chat-messages"></div>
+        <div>
+          <input id="chat-input" type="text" placeholder="Ask me something...">
+          <button id="chat-send" class="neon-btn">Send</button>
+        </div>
+      </div>
+    </div>
+    <!-- Leaderboard -->
+    <div id="leaderboard-tab" class="tab-content">
+      <div class="leaderboard-card">
+        <h3>🏆 Leaderboard 🏆</h3>
+        <div>
+          <select id="leaderboard-select" class="neon-btn" style="margin-bottom:10px;">
+            <option value="ttt">Tic Tac Toe</option>
+            <option value="ludo">Ludo</option>
+            <option value="snake">Snake</option>
+            <option value="memory">Memory</option>
+          </select>
+        </div>
+        <ol class="leaderboard-list" id="leaderboard-list"></ol>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <p class="neon-text">© 2025 Neon Games. All Rights Reserved.</p>
+  </footer>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // --- Tab Navigation ---
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab + '-tab').classList.add('active');
+      if (btn.dataset.tab === 'ludo') drawLudoBoard();
+      if (btn.dataset.tab === 'snake') drawSnake();
+      if (btn.dataset.tab === 'memory') drawMemory();
+      if (btn.dataset.tab === 'leaderboard') renderLeaderboard();
+    });
+  });
+
+  // --- Neon Color Customization ---
+  const player1ColorInput = document.getElementById('player1-color');
+  const player2ColorInput = document.getElementById('player2-color');
+  const gridColorInput = document.getElementById('grid-color');
+  player1ColorInput.addEventListener('input', updateNeonStyles);
+  player2ColorInput.addEventListener('input', updateNeonStyles);
+  gridColorInput.addEventListener('input', updateNeonStyles);
+
+  // --- Tic Tac Toe Logic ---
+  const boardDiv = document.getElementById('ttt-board');
+  const statusDiv = document.getElementById('ttt-status');
+  const moveHistoryList = document.getElementById('move-history');
+  const aiSelect = document.getElementById('ai-select');
+  const tttSaveBtn = document.getElementById('ttt-save');
+  const tttLoadBtn = document.getElementById('ttt-load');
+  const tttUndoBtn = document.getElementById('ttt-undo');
+  const tttRedoBtn = document.getElementById('ttt-redo');
+  const tttHintBtn = document.getElementById('ttt-hint');
+  let board = Array(9).fill('');
+  let xIsNext = true;
+  let gameActive = true;
+  let moves = [];
+  let futureMoves = [];
+  let aiMode = 'none';
+
+  aiSelect.addEventListener('change', () => { aiMode = aiSelect.value; tttReset(); });
+
+  function renderBoard() {
+    boardDiv.innerHTML = '';
+    board.forEach((cell, idx) => {
+      const div = document.createElement('div');
+      div.classList.add('cell');
+      if (cell) div.classList.add(cell.toLowerCase());
+      div.innerHTML = cell;
+      div.setAttribute('tabindex', "0");
+      div.setAttribute('aria-label', `Cell ${idx+1}, ${cell || 'empty'}`);
+      div.addEventListener('click', () => handleMove(idx));
+      div.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') handleMove(idx);
+      });
+      boardDiv.appendChild(div);
+    });
+    updateNeonStyles();
+  }
+  function updateNeonStyles() {
+    const player1 = player1ColorInput.value;
+    const player2 = player2ColorInput.value;
+    const gridColor = gridColorInput.value;
+    boardDiv.style.boxShadow = `0 0 40px ${gridColor}, 0 0 60px ${player1} inset`;
+    [...boardDiv.children].forEach((cellDiv, i) => {
+      cellDiv.style.boxShadow = `0 0 12px ${gridColor}`;
+      if (board[i] === 'X') {
+        cellDiv.style.color = player1;
+        cellDiv.style.textShadow = `0 0 16px ${player1}, 0 0 30px ${player1}`;
+      } else if (board[i] === 'O') {
+        cellDiv.style.color = player2;
+        cellDiv.style.textShadow = `0 0 16px ${player2}, 0 0 30px ${player2}`;
+      } else {
+        cellDiv.style.color = gridColor;
+        cellDiv.style.textShadow = '';
+      }
+    });
+  }
+  function handleMove(idx) {
+    if (!gameActive || board[idx]) return;
+    const player = xIsNext ? 'X' : 'O';
+    board[idx] = player;
+    moves.push({player, pos: idx, board: [...board]});
+    futureMoves = [];
+    renderBoard();
+    updateHistory();
+    const winner = checkWinner();
+    if (winner) {
+      statusDiv.innerHTML = `<span style="color:${xIsNext ? player1ColorInput.value : player2ColorInput.value};">Player ${xIsNext ? '1' : '2'} (${player}) Wins!</span>`;
+      highlightWinner(winner);
+      gameActive = false;
+      updateLeaderboard('ttt', player, moves.length);
+      return;
+    } else if (board.every(cell => cell)) {
+      statusDiv.innerHTML = `<span style="color:${gridColorInput.value};">Draw! No winner.</span>`;
+      gameActive = false;
+      return;
+    } else {
+      xIsNext = !xIsNext;
+      statusDiv.innerHTML = `<span style="color:${xIsNext ? player1ColorInput.value : player2ColorInput.value};">Player ${xIsNext ? '1' : '2'}'s Turn (${xIsNext ? 'X' : 'O'})</span>`;
+    }
+    if (aiMode !== 'none' && !gameOver() && ((aiMode === 'easy' && !xIsNext) || (aiMode === 'hard' && !xIsNext) || (aiMode === 'crazy' && !xIsNext))) {
+      setTimeout(() => {
+        aiMove();
+        renderBoard();
+        updateHistory();
+      }, 450);
+    }
+  }
+  function aiMove() {
+    let idx;
+    if (aiMode === 'easy') {
+      let empty = board.map((c,i)=>c?'':i).filter(x=>x!=='');
+      idx = empty[Math.floor(Math.random()*empty.length)];
+    } else if (aiMode === 'hard') {
+      idx = findBestMove(board, 'O');
+    } else if (aiMode === 'crazy') {
+      let empty = board.map((c,i)=>c?'':i).filter(x=>x!=='');
+      idx = empty[Math.floor(Math.random()*empty.length)];
+      if (Math.random() < 0.35) idx = findBestMove(board, 'O');
+    }
+    if (typeof idx !== 'undefined') handleMove(idx);
+  }
+  function findBestMove(bd, aiPlayer) {
+    function minimax(b, depth, isMax, alpha, beta) {
+      const winner = checkWinnerCustom(b);
+      if (winner) return winner === 'O' ? 10 - depth : -10 + depth;
+      if (b.every(x=>x)) return 0;
+      if (isMax) {
+        let maxEval = -Infinity;
+        for (let i=0;i<9;i++) {
+          if (!b[i]) {
+            b[i]='O';
+            let eval = minimax(b, depth+1, false, alpha, beta);
+            b[i]='';
+            maxEval = Math.max(maxEval, eval);
+            alpha = Math.max(alpha, eval);
+            if (beta <= alpha) break;
+          }
+        }
+        return maxEval;
+      } else {
+        let minEval = Infinity;
+        for (let i=0;i<9;i++) {
+          if (!b[i]) {
+            b[i]='X';
+            let eval = minimax(b, depth+1, true, alpha, beta);
+            b[i]='';
+            minEval = Math.min(minEval, eval);
+            beta = Math.min(beta, eval);
+            if (beta <= alpha) break;
+          }
+        }
+        return minEval;
+      }
+    }
+    let best = -Infinity, move = -1;
+    for (let i=0;i<9;i++) {
+      if (!bd[i]) {
+        bd[i]='O';
+        let score = minimax(bd, 0, false, -Infinity, Infinity);
+        bd[i]='';
+        if (score > best) { best = score; move = i; }
+      }
+    }
+    return move;
+  }
+  function checkWinner() {
+    const winLines = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    for (const line of winLines) {
+      const [a,b,c] = line;
+      if (board[a] && board[a] === board[b] && board[b] === board[c]) return line;
+    }
+    return null;
+  }
+  function checkWinnerCustom(brd) {
+    const winLines = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    for (const line of winLines) {
+      const [a,b,c] = line;
+      if (brd[a] && brd[a] === brd[b] && brd[b] === brd[c]) return brd[a];
+    }
+    return null;
+  }
+  function highlightWinner(line) {
+    line.forEach(i => boardDiv.children[i].classList.add('winner'));
+  }
+  function updateHistory() {
+    moveHistoryList.innerHTML = '';
+    moves.forEach((move, idx) => {
+      const li = document.createElement('li');
+      li.textContent = `Move ${idx+1}: ${move.player} to (${1+move.pos%3}, ${1+Math.floor(move.pos/3)})`;
+      moveHistoryList.appendChild(li);
+    });
+  }
+  function tttReset() {
+    board = Array(9).fill('');
+    xIsNext = true;
+    gameActive = true;
+    moves = [];
+    futureMoves = [];
+    renderBoard();
+    updateHistory();
+    statusDiv.innerHTML = `<span style="color:${player1ColorInput.value};">Player 1's Turn (X)</span>`;
+    if ((aiMode==='easy'||aiMode==='hard'||aiMode==='crazy') && !xIsNext) aiMove();
+  }
+  document.getElementById('ttt-reset').addEventListener('click', tttReset);
+  tttSaveBtn.addEventListener('click', saveGame);
+  tttLoadBtn.addEventListener('click', loadGame);
+  tttUndoBtn.addEventListener('click', undoMove);
+  tttRedoBtn.addEventListener('click', redoMove);
+  tttHintBtn.addEventListener('click', () => {
+    if (!gameActive) return;
+    let idx = findBestMove(board, xIsNext ? 'X' : 'O');
+    if (typeof idx === 'undefined') return;
+    let cell = boardDiv.children[idx];
+    cell.classList.add('winner');
+    setTimeout(()=>cell.classList.remove('winner'), 700);
+  });
+  function saveGame() {
+    localStorage.setItem('ttt-board', JSON.stringify(board));
+    localStorage.setItem('ttt-xIsNext', JSON.stringify(xIsNext));
+    localStorage.setItem('ttt-moves', JSON.stringify(moves));
+    localStorage.setItem('ttt-futureMoves', JSON.stringify(futureMoves));
+    localStorage.setItem('ttt-aiMode', aiMode);
+    alert('Game saved!');
+  }
+  function loadGame() {
+    const b = JSON.parse(localStorage.getItem('ttt-board') || '[]');
+    const x = JSON.parse(localStorage.getItem('ttt-xIsNext') || 'true');
+    const m = JSON.parse(localStorage.getItem('ttt-moves') || '[]');
+    const f = JSON.parse(localStorage.getItem('ttt-futureMoves') || '[]');
+    const ai = localStorage.getItem('ttt-aiMode') || 'none';
+    if (b.length === 9) {
+      board = b;
+      xIsNext = x;
+      moves = m;
+      futureMoves = f;
+      aiSelect.value = ai;
+      aiMode = ai;
+      gameActive = !(checkWinner() || board.every(cell => cell));
+      renderBoard();
+      updateHistory();
+      statusDiv.innerHTML = gameActive ?
+        `<span style="color:${xIsNext ? player1ColorInput.value : player2ColorInput.value};">Player ${xIsNext ? '1' : '2'}'s Turn (${xIsNext ? 'X' : 'O'})</span>`
+        :
+        `<span style="color:${gridColorInput.value};">Game loaded, but not active.</span>`;
+    } else { alert('No saved game found!'); }
+  }
+  function undoMove() {
+    if (moves.length === 0) return;
+    futureMoves.unshift(moves.pop());
+    if (moves.length) {
+      board = [...moves[moves.length-1].board];
+      xIsNext = moves.length%2===0;
+    } else {
+      board = Array(9).fill('');
+      xIsNext = true;
+    }
+    gameActive = !(checkWinner() || board.every(cell => cell));
+    renderBoard();
+    updateHistory();
+    statusDiv.innerHTML = gameActive ?
+      `<span style="color:${xIsNext ? player1ColorInput.value : player2ColorInput.value};">Player ${xIsNext ? '1' : '2'}'s Turn (${xIsNext ? 'X' : 'O'})</span>` :
+      `<span style="color:${gridColorInput.value};">Game not active.</span>`;
+  }
+  function redoMove() {
+    if (futureMoves.length === 0) return;
+    const move = futureMoves.shift();
+    board = [...move.board];
+    moves.push(move);
+    xIsNext = moves.length%2===0;
+    gameActive = !(checkWinner() || board.every(cell => cell));
+    renderBoard();
+    updateHistory();
+    statusDiv.innerHTML = gameActive ?
+      `<span style="color:${xIsNext ? player1ColorInput.value : player2ColorInput.value};">Player ${xIsNext ? '1' : '2'}'s Turn (${xIsNext ? 'X' : 'O'})</span>` :
+      `<span style="color:${gridColorInput.value};">Game not active.</span>`;
+  }
+  function gameOver() {
+    return !!checkWinner() || board.every(cell=>cell);
+  }
+  tttReset();
+
+  // --- Joke Generator ---
+  let jokes = [
+    "Why did the scarecrow win an award? Because he was outstanding in his field!",
+    "Parallel lines have so much in common. It’s a shame they’ll never meet.",
+    "Why don’t scientists trust atoms? Because they make up everything!",
+    "Why did the math book look sad? Because it had too many problems.",
+    "Why don’t programmers like nature? It has too many bugs.",
+    "What do you call cheese that isn't yours? Nacho cheese.",
+    "Why did the bicycle fall over? Because it was two-tired!",
+    "Why do cows wear bells? Because their horns don't work.",
+    "Why did the coffee file a police report? It got mugged.",
+    "I would tell you a joke about UDP, but you might not get it.",
+    "What do you call 8 hobbits? A hobbyte.",
+    "Why did the chicken join a band? Because it had the drumsticks.",
+    "Why do Java developers wear glasses? Because they don't see sharp.",
+    "Why was the computer cold? It left its Windows open.",
+    "Why can't you trust stairs? They're always up to something."
+  ];
+  let lastJokeIdx = -1;
+  function randomJoke() {
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * jokes.length);
+    } while (idx === lastJokeIdx && jokes.length > 1);
+    lastJokeIdx = idx;
+    document.getElementById('joke-text').textContent = jokes[idx];
+  }
+  document.getElementById('joke-btn').addEventListener('click', randomJoke);
+  document.getElementById('add-joke').addEventListener('click', ()=>{
+    let txt = document.getElementById('custom-joke').value.trim();
+    if (txt && !jokes.includes(txt)) {
+      jokes.push(txt);
+      document.getElementById('joke-text').textContent = txt;
+      document.getElementById('custom-joke').value = '';
+    }
+  });
+  document.getElementById('custom-joke').addEventListener('keypress', e=>{
+    if (e.key === 'Enter') document.getElementById('add-joke').click();
+  });
+  document.getElementById('tts-joke').addEventListener('click', ()=>{
+    let txt = document.getElementById('joke-text').textContent;
+    let utter = new(window.speechSynthesis||window.webkitSpeechSynthesis).SpeechSynthesisUtterance(txt);
+    utter.rate = 1.05; utter.pitch = 1.12;
+    window.speechSynthesis.speak(utter);
+  });
+  document.getElementById('copy-joke').addEventListener('click', ()=>{
+    navigator.clipboard.writeText(document.getElementById('joke-text').textContent);
+  });
+  randomJoke();
+
+  // --- Ludo Mini-Game ---
+  const ludoCanvas = document.getElementById('ludo-board');
+  const ctx = ludoCanvas.getContext('2d');
+  const ludoStatus = document.getElementById('ludo-status');
+  let ludoState = {
+    players: [
+      {pos: 0, color: '#00fff0', emoji: '🟦'},
+      {pos: 0, color: '#ff00ea', emoji: '🟪'}
+    ],
+    turn: 0,
+    target: 25,
+    rolling: false
+  };
+  function drawLudoBoard() {
+    ctx.clearRect(0, 0, ludoCanvas.width, ludoCanvas.height);
+    const steps = ludoState.target+1;
+    const w = ludoCanvas.width, h = ludoCanvas.height;
+    const margin = 36;
+    const trackLen = w - 2*margin;
+    const stepW = trackLen/(steps-1);
+    ctx.save();
+    ctx.strokeStyle = '#00ff40';
+    ctx.lineWidth = 7;
+    ctx.shadowColor = '#00fff0';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.moveTo(margin, h/2);
+    ctx.lineTo(w-margin, h/2);
+    ctx.stroke();
+    ctx.restore();
+    for(let i=0;i<steps;i++) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(margin + i*stepW, h/2, 14, 0, 2*Math.PI);
+      ctx.fillStyle = i%5===0 ? '#00fff0' : '#222';
+      ctx.shadowColor = '#00ff40';
+      ctx.shadowBlur = i%5===0 ? 7 : 0;
+      ctx.fill();
+      ctx.strokeStyle = '#00ff40';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
+      ctx.save();
+      ctx.font = '15px Orbitron, Arial';
+      ctx.fillStyle = '#00fff0';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      if (i%5===0) ctx.fillText(i, margin + i*stepW, h/2+18);
+      ctx.restore();
+    }
+    ludoState.players.forEach((p, idx) => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(margin + p.pos*stepW, h/2, 11, 0, 2*Math.PI);
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 16;
+      ctx.globalAlpha = 0.92;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#fff';
+      ctx.stroke();
+      ctx.restore();
+      ctx.save();
+      ctx.font = 'bold 18px Orbitron, Arial';
+      ctx.fillStyle = idx===ludoState.turn ? '#fff' : '#bbb';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(idx+1, margin + p.pos*stepW, h/2);
+      ctx.restore();
+      ctx.save();
+      ctx.font = "22px serif";
+      ctx.fillText(p.emoji, margin + p.pos*stepW, h/2-17);
+      ctx.restore();
+    });
+  }
+  function ludoReset() {
+    ludoState.players[0].pos = 0;
+    ludoState.players[1].pos = 0;
+    ludoState.turn = 0;
+    ludoState.rolling = false;
+    drawLudoBoard();
+    ludoStatus.textContent = `Player ${ludoState.turn+1}'s turn (${ludoState.players[ludoState.turn].emoji})`;
+  }
+  document.getElementById('ludo-roll').addEventListener('click', () => {
+    if (ludoState.rolling) return;
+    ludoState.rolling = true;
+    const player = ludoState.players[ludoState.turn];
+    let roll = 1 + Math.floor(Math.random()*6);
+    ludoStatus.textContent = `Player ${ludoState.turn+1} rolled...`;
+    setTimeout(() => {
+      ludoStatus.textContent = `Player ${ludoState.turn+1} rolled a ${roll}!`;
+      player.pos += roll;
+      if (player.pos > ludoState.target) player.pos = ludoState.target;
+      drawLudoBoard();
+      if (player.pos === ludoState.target) {
+        ludoStatus.textContent = `🎉 Player ${ludoState.turn+1} wins! 🎉`;
+        updateLeaderboard('ludo', `P${ludoState.turn+1}`, player.pos);
+      } else {
+        ludoState.turn = 1 - ludoState.turn;
+        setTimeout(() => {
+          ludoStatus.textContent = `Player ${ludoState.turn+1}'s turn (${ludoState.players[ludoState.turn].emoji})`;
+          ludoState.rolling = false;
+        }, 900);
+      }
+    }, 1000);
+  });
+  drawLudoBoard();
+  ludoReset();
+  ludoCanvas.addEventListener('click', ludoReset);
+
+  // --- Snake Game ---
+  const snakeCanvas = document.getElementById('snake-board');
+  const sctx = snakeCanvas.getContext('2d');
+  const snakeScoreSpan = document.getElementById('snake-score');
+  const snakeStartBtn = document.getElementById('snake-start');
+  let snakeGame = {
+    snake: [{x:10,y:10}],
+    dir: {x:1,y:0},
+    food: {x:15,y:10},
+    score: 0,
+    running: false,
+    speed: 80,
+    interval: null,
+    grid: 20
+  };
+
+  function resetSnake() {
+    snakeGame.snake = [{x:10,y:10}];
+    snakeGame.dir = {x:1,y:0};
+    snakeGame.food = {x:15,y:10};
+    snakeGame.score = 0;
+    snakeGame.running = false;
+    snakeGame.speed = 80;
+    snakeScoreSpan.textContent = 'Score: 0';
+    drawSnake();
+  }
+  function drawSnake() {
+    sctx.clearRect(0,0,snakeCanvas.width,snakeCanvas.height);
+    for(let i=0;i<20;i++) for(let j=0;j<20;j++) {
+      sctx.fillStyle = "#10141a";
+      sctx.fillRect(i*20,j*20,20,20);
+    }
+    sctx.save();
+    sctx.shadowColor = "#ff00ea";
+    sctx.shadowBlur = 16;
+    sctx.fillStyle = "#ff00ea";
+    sctx.beginPath();
+    sctx.arc(snakeGame.food.x*20+10,snakeGame.food.y*20+10,9,0,2*Math.PI);
+    sctx.fill();
+    sctx.restore();
+    snakeGame.snake.forEach((part, idx) => {
+      sctx.save();
+      sctx.shadowColor = "#00fff0";
+      sctx.shadowBlur = 10;
+      sctx.fillStyle = idx===0 ? "#00fff0" : "#00ff40";
+      sctx.fillRect(part.x*20+2, part.y*20+2,16,16);
+      sctx.restore();
+    });
+  }
+  function snakeStep() {
+    let head = {...snakeGame.snake[0]};
+    head.x += snakeGame.dir.x;
+    head.y += snakeGame.dir.y;
+    if (head.x<0 || head.x>=20 || head.y<0 || head.y>=20) return snakeGameOver();
+    if (snakeGame.snake.some(part => part.x === head.x && part.y === head.y)) return snakeGameOver();
+    snakeGame.snake.unshift(head);
+    if (head.x === snakeGame.food.x && head.y === snakeGame.food.y) {
+      snakeGame.score++;
+      snakeScoreSpan.textContent = 'Score: '+snakeGame.score;
+      updateLeaderboard('snake', 'You', snakeGame.score);
+      let fx,fy,cnt=0;
+      do {
+        fx = Math.floor(Math.random()*20);
+        fy = Math.floor(Math.random()*20);
+        cnt++;
+        if (cnt>1000) break;
+      } while (snakeGame.snake.some(part=>part.x===fx && part.y===fy));
+      snakeGame.food = {x:fx,fy:fy};
+      snakeGame.food = {x:fx,y:fy};
+    } else {
+      snakeGame.snake.pop();
+    }
+    drawSnake();
+  }
+  function snakeGameOver() {
+    snakeGame.running = false;
+    clearInterval(snakeGame.interval);
+    sctx.save();
+    sctx.font = "30px Orbitron, Arial";
+    sctx.fillStyle = "#ff00ea";
+    sctx.shadowColor = "#ff00ea";
+    sctx.shadowBlur = 15;
+    sctx.textAlign = "center";
+    sctx.fillText("Game Over!", snakeCanvas.width/2, snakeCanvas.height/2);
+    sctx.restore();
+  }
+  function snakeStart() {
+    resetSnake();
+    snakeGame.running = true;
+    snakeGame.interval = setInterval(snakeStep, snakeGame.speed);
+  }
+  snakeStartBtn.addEventListener('click', snakeStart);
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('snake-tab').classList.contains('active')) return;
+    let {x,y} = snakeGame.dir;
+    if (e.key === 'ArrowLeft' && x!==1) snakeGame.dir={x:-1,y:0};
+    else if (e.key === 'ArrowRight' && x!==-1) snakeGame.dir={x:1,y:0};
+    else if (e.key === 'ArrowUp' && y!==1) snakeGame.dir={x:0,y:-1};
+    else if (e.key === 'ArrowDown' && y!==-1) snakeGame.dir={x:0,y:1};
+  });
+  let lastTouch = null;
+  snakeCanvas.addEventListener('touchstart', e=>{
+    lastTouch = e.touches[0];
+  });
+  snakeCanvas.addEventListener('touchmove', e=>{
+    if (!lastTouch) return;
+    let dx = e.touches[0].clientX - lastTouch.clientX;
+    let dy = e.touches[0].clientY - lastTouch.clientY;
+    let {x,y} = snakeGame.dir;
+    if (Math.abs(dx)>Math.abs(dy)) {
+      if (dx>25 && x!==-1) snakeGame.dir={x:1,y:0};
+      else if (dx<-25 && x!==1) snakeGame.dir={x:-1,y:0};
+    } else {
+      if (dy>25 && y!==-1) snakeGame.dir={x:0,y:1};
+      else if (dy<-25 && y!==1) snakeGame.dir={x:0,y:-1};
+    }
+    lastTouch = e.touches[0];
+  });
+  resetSnake();
+
+  // --- Memory Game ---
+  const memoryBoard = document.getElementById('memory-board');
+  const memoryResetBtn = document.getElementById('memory-reset');
+  const memoryStatus = document.getElementById('memory-status');
+  let memoryState = { cards: [], first: null, second: null, locked: false, matched: 0, moves: 0 };
+  const icons = ["🍕","🍔","🍟","🍩","🍭","🍦","🍉","🍒"];
+  function shuffle(arr) { for(let i=arr.length-1;i>0;i--) { let j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } }
+  function resetMemory() {
+    let cards = icons.concat(icons).map((icon, i) => ({icon, id:i, flipped:false, matched:false}));
+    shuffle(cards);
+    memoryState = { cards, first: null, second: null, locked: false, matched: 0, moves: 0 };
+    drawMemory();
+    memoryStatus.textContent = "Moves: 0";
+  }
+  function drawMemory() {
+    memoryBoard.innerHTML = '';
+    memoryState.cards.forEach((card, i) => {
+      const div = document.createElement('div');
+      div.className = "memory-card" + (card.flipped||card.matched?' flipped':'');
+      if (card.matched) div.classList.add('matched');
+      div.innerHTML = card.flipped||card.matched ? card.icon : '';
+      div.addEventListener('click', ()=>flipCard(i));
+      memoryBoard.appendChild(div);
+    });
+  }
+  function flipCard(idx) {
+    if (memoryState.locked) return;
+    let card = memoryState.cards[idx];
+    if (card.flipped || card.matched) return;
+    card.flipped = true;
+    if (memoryState.first === null) {
+      memoryState.first = idx;
+    } else {
+      memoryState.second = idx;
+      memoryState.locked = true;
+      memoryState.moves++;
+      memoryStatus.textContent = `Moves: ${memoryState.moves}`;
+      let c1 = memoryState.cards[memoryState.first];
+      let c2 = card;
+      if (c1.icon === c2.icon) {
+        c1.matched = c2.matched = true;
+        memoryState.matched += 2;
+        memoryState.locked = false;
+        if (memoryState.matched === memoryState.cards.length) {
+          memoryStatus.textContent = `You won in ${memoryState.moves} moves!`;
+          updateLeaderboard('memory', 'You', memoryState.moves);
+        }
+      } else {
+        setTimeout(() => {
+          c1.flipped = c2.flipped = false;
+          memoryState.locked = false;
+          drawMemory();
+        }, 900);
+      }
+      memoryState.first = memoryState.second = null;
+    }
+    drawMemory();
+  }
+  memoryResetBtn.addEventListener('click', resetMemory);
+  resetMemory();
+
+  // --- ChatBot ---
+  const chatMessages = document.getElementById('chat-messages');
+  const chatInput = document.getElementById('chat-input');
+  const chatSend = document.getElementById('chat-send');
+  function addChat(msg, from) {
+    let p = document.createElement('div');
+    p.style.margin = "4px 0";
+    p.innerHTML = `<strong style="color:${from==='user'?'#00fff0':'#ff00ea'}">${from==='user'?'You':'Bot'}:</strong> ${msg}`;
+    chatMessages.appendChild(p);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  function botReply(userMsg) {
+    let msg = userMsg.toLowerCase();
+    let reply = "";
+    if (msg.includes("hi")||msg.includes("hello")) reply = "Hello! Welcome to Neon Game Hub! ✨";
+    else if (msg.includes("who are you")) reply = "I'm your friendly mini neon chatbot! Ask me anything or play a game!";
+    else if (msg.includes("joke")) reply = jokes[Math.floor(Math.random()*jokes.length)];
+    else if (msg.includes("game")) reply = "Try the Tic Tac Toe, Snake, Ludo, or Memory games, all with neon style!";
+    else if (msg.includes("how") && msg.includes("play")) reply = "Just click on any tab above and start playing. All games are PC and mobile friendly!";
+    else if (msg.includes("best score")) reply = "Check the Leaderboard tab for high scores!";
+    else if (msg.includes("bye")) reply = "Goodbye! 👋 Play again soon!";
+    else if (msg.includes("favorite color")) reply = "Neon blue, obviously! What's yours?";
+    else reply = "I'm still learning! Ask me about games, jokes, or say 'hi'.";
+    setTimeout(()=>addChat(reply, 'bot'), 400);
+  }
+  chatSend.addEventListener('click', ()=>{
+    let msg = chatInput.value.trim();
+    if (!msg) return;
+    addChat(msg, 'user');
+    chatInput.value = '';
+    botReply(msg);
+  });
+  chatInput.addEventListener('keydown', e=>{
+    if (e.key==='Enter') chatSend.click();
+  });
+
+  // --- Leaderboard ---
+  const leaderboardList = document.getElementById('leaderboard-list');
+  const leaderboardSelect = document.getElementById('leaderboard-select');
+  leaderboardSelect.addEventListener('change', renderLeaderboard);
+  function updateLeaderboard(game, player, score) {
+    let lb = JSON.parse(localStorage.getItem('lb-'+game)||'[]');
+    lb.push({player, score, time: Date.now()});
+    if (game === 'memory') lb = lb.sort((a,b)=>a.score-b.score).slice(0,10);
+    else lb = lb.sort((a,b)=>b.score-a.score).slice(0,10);
+    localStorage.setItem('lb-'+game, JSON.stringify(lb));
+  }
+  function renderLeaderboard() {
+    let game = leaderboardSelect.value;
+    let lb = JSON.parse(localStorage.getItem('lb-'+game)||'[]');
+    leaderboardList.innerHTML = '';
+    if (!lb.length) leaderboardList.innerHTML = '<li>No scores yet. Play to set a record!</li>';
+    else lb.forEach((item,idx)=>
+      leaderboardList.innerHTML += `<li>${item.player} - ${item.score} (${new Date(item.time).toLocaleDateString()})</li>`);
+  }
+  renderLeaderboard();
+
+  // --- Accessibility & UX ---
+  document.body.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      if (document.activeElement === player1ColorInput ||
+          document.activeElement === player2ColorInput ||
+          document.activeElement === gridColorInput) {
+        updateNeonStyles();
+      }
+    }
+  });
+  window.addEventListener('resize', () => {
+    setTimeout(drawLudoBoard, 120);
+    setTimeout(drawSnake, 120);
+    setTimeout(drawMemory, 120);
+  });
+});
+</script>
+</body>
+</html>
